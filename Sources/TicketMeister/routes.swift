@@ -1,65 +1,14 @@
 import Fluent
 import Vapor
 
-struct SSEEvent {
-    let event: String
-    let data: String
-
-    func encode() -> String {
-        """
-        event: \(event)
-        data: \(data)
-
-        """
-    }
-}
-
-actor SSEBroadcasterActor {
-    private var continuations: [UUID: AsyncStream<String>.Continuation] = [:]
-
-    func addClient(id: UUID, continuation: AsyncStream<String>.Continuation) {
-        continuations[id] = continuation
-    }
-
-    func removeClient(id: UUID) {
-        continuations.removeValue(forKey: id)
-    }
-
-    func broadcast(_ message: String) {
-        for cont in continuations.values {
-
-            let body = """
-                event: message
-                data: { "content": "\(message)" }
-                    
-                """
-
-            cont.yield(body)
-        }
-    }
-
-    func report() -> String {
-        "there are \(continuations.count) continuations"
-    }
-}
-
-let broadcaster = SSEBroadcasterActor()
-
 func routes(_ app: Application) throws {
-    app.get { req async in
-        "It works!"
-    }
 
-    app.get("hello") { req async -> String in
-        "Hello, world!"
-    }
+    // app.post("meh") { req async -> String in
 
-    app.post("meh") { req async -> String in
-
-        await broadcaster.broadcast("\(req.body)")
-        await print(broadcaster.report())
-        return "done"
-    }
+    //     await broadcaster.broadcast("\(req.body)")
+    //     await print(broadcaster.report())
+    //     return "done"
+    // }
 
     app.get("events", "seats") { req async throws -> Response in
         let id = UUID()
@@ -107,5 +56,5 @@ func routes(_ app: Application) throws {
         )
     }
 
-    try app.register(collection: TodoController())
+    try app.register(collection: VenueController())
 }
