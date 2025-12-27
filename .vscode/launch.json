@@ -1,0 +1,24 @@
+{
+  "configurations": [
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:TicketMeister}",
+      "name": "Debug TicketMeister",
+      "target": "TicketMeister",
+      "configuration": "debug",
+      "preLaunchTask": "swift: Build Debug TicketMeister"
+    },
+    {
+      "type": "swift",
+      "request": "launch",
+      "args": [],
+      "cwd": "${workspaceFolder:TicketMeister}",
+      "name": "Release TicketMeister",
+      "target": "TicketMeister",
+      "configuration": "release",
+      "preLaunchTask": "swift: Build Release TicketMeister"
+    }
+  ]
+}
