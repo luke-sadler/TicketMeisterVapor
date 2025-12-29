@@ -2,13 +2,13 @@ import Vapor
 
 struct SeatDTO: Codable, Content {
 
-  let row: String
-  let col: Int
+  let section: UUID
+  let number: Int
   let status: SeatStatus
 
   func dump() -> String {
     """
-    {"row": "\(row)", "col": \(col), "status": "\(status.rawValue)"}
+    {"section": "\(section)", "number": \(number), "status": "\(status.rawValue)"}
     """
   }
 }

@@ -1,3 +1,4 @@
+import Fluent
 import Vapor
 
 enum ChangeError: Error {
@@ -6,73 +7,90 @@ enum ChangeError: Error {
   case alreadySold
 }
 
-actor Venue {
-  var name: String
-  var seats: [Seat]
+final class Venue: Model, Authenticatable, Content, @unchecked Sendable {
+  static let schema = "venues"
 
-  init(name: String, rows: Int, cols: Int) {
+  @ID(key: .id)
+  var id: UUID?
 
-    precondition(rows > 0, "rows must be greater than 0")
+  @Field(key: "currency")
+  var currency: String
 
-    func rowLabel(_ number: Int) -> String {
-      var n = number
-      var result = ""
+  @Field(key: "title")
+  var title: String
 
-      while n > 0 {
-        n -= 1
-        result = String(UnicodeScalar(65 + n % 26)!) + result
-        n /= 26
-      }
+  @Children(for: \.$venue)
+  var events: [Event]
 
-      return result
-    }
+  @Children(for: \.$venue)
+  var seatGroup: [SeatGroup]
 
-    self.name = name
-    self.seats = (1...rows).map { row in
+  init() {}
 
-      return (1...cols).map { col in
-
-        return Seat(row: rowLabel(row), col: col, status: .available)
-      }
-    }
-    .reduce([], +)
-
+  init(
+    id: UUID?,
+    currency: String,
+    title: String
+  ) {
+    self.id = id
+    self.currency = currency
+    self.title = title
   }
 
-  private func updateSeat(_ idx: Array<Int>.Index, _ new: Seat) {
-    seats.remove(at: idx)
-    seats.insert(new, at: idx)
-  }
-
-  func releaseSeat(request: SeatRequest) throws -> Seat {
-    if let idx = self.seats.firstIndex(where: { $0 ~= request }) {
-      let seat = seats[idx]
-      let new = Seat(row: request.row, col: request.col, status: .available)
-      updateSeat(idx, new)
-      return new
-    }
-
-    throw ChangeError.unableToFind
-  }
-
-  func holdSeat(request: SeatRequest) throws -> Seat {
-    if let idx = self.seats.firstIndex(where: { $0 ~= request }) {
-      let seat = seats[idx]
-      switch seat.status {
-      case .available:
-        let new = Seat(row: request.row, col: request.col, status: .onHold)
-        updateSeat(idx, new)
-        return new
-      case .onHold: throw ChangeError.alreadyOnHold
-      case .sold: throw ChangeError.alreadySold
-      }
-    }
-    throw ChangeError.unableToFind
+  func toLiteDto() -> VenueDTO {
+    .init(
+      id: id,
+      currency: currency,
+      title: title,
+      events: nil,
+      seatsGroup: nil)
   }
 
   func toDto() -> VenueDTO {
     .init(
-      name: name,
-      seats: seats.map { $0.toDto() })
+      id: id,
+      currency: currency,
+      title: title,
+      events: events.map { $0.toDto() },
+      seatsGroup: seatGroup.map { $0.toDto() })
   }
+
+  // init()
+
+  // private func updateSeat(_ idx: Array<Int>.Index, _ new: Seat) {
+  //   seating.remove(at: idx)
+  //   seating.insert(new, at: idx)
+  // }
+
+  // func releaseSeat(request: SeatRequest) throws -> Seat {
+  //   if let idx = self.seating.firstIndex(where: { $0 ~= request }) {
+  //     let seat = seating[idx]
+  //     let new = Seat(row: request.row, col: request.col, status: .available)
+  //     updateSeat(idx, new)
+  //     return new
+  //   }
+
+  //   throw ChangeError.unableToFind
+  // }
+
+  // func holdSeat(request: SeatRequest) throws -> Seat {
+  //   if let idx = self.seating.firstIndex(where: { $0 ~= request }) {
+  //     let seat = seating[idx]
+  //     switch seat.status {
+  //     case .available:
+  //       let new = Seat(row: request.row, col: request.col, status: .onHold)
+  //       updateSeat(idx, new)
+  //       return new
+  //     case .onHold: throw ChangeError.alreadyOnHold
+  //     case .sold: throw ChangeError.alreadySold
+  //     }
+  //   }
+  //   throw ChangeError.unableToFind
+  // }
+
+  // func toDto() -> VenueDTO {
+  //   .init(
+  //     name: name,
+  //     seats: seating.map { $0.toDto() })
+  // }
 }

@@ -1,26 +1,49 @@
+import Fluent
 import Vapor
 
-struct Seat: Codable {
+final class Seat: Model, Authenticatable, Content, @unchecked Sendable {
+  static let schema = "seating"
 
-  let row: String
-  let col: Int
+  @ID(key: .id)
+  var id: UUID?
+
+  @Parent(key: "section")
+  var section: SeatGroup
+
+  @Field(key: "number")
+  var number: Int
+
+  @Field(key: "status")
   var status: SeatStatus
 
-  mutating func updateStatus(_ status: SeatStatus) {
+  init() {}
+
+  init(
+    id: UUID?,
+    section: SeatGroup,
+    number: Int,
+    status: SeatStatus
+  ) {
+    self.id = id
+    self.section = section
+    self.number = number
     self.status = status
   }
 
-  func toDto() -> SeatDTO {
-    .init(
-      row: row,
-      col: col,
-      status: status)
-  }
+  // mutating func updateStatus(_ status: SeatStatus) {
+  //   self.status = status
+  // }
+
+  // func toDto() -> SeatDTO {
+  //   .init(
+  //     section: section, number: number, status: status
+  //     )
+  // }
 }
 
-extension Seat {
+// extension Seat {
 
-  static func ~= (lhs: Seat, rhs: SeatRequest) -> Bool {
-    lhs.row == rhs.row && lhs.col == rhs.col
-  }
-}
+//   static func ~= (lhs: Seat, rhs: SeatRequest) -> Bool {
+//     lhs.section == rhs.section && lhs.number == rhs.number
+//   }
+// }
