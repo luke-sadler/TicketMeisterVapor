@@ -14,7 +14,7 @@ public func configure(_ app: Application) async throws {
                 hostname: Environment.get("DATABASE_HOST") ?? "localhost",
                 port: Environment.get("DATABASE_PORT").flatMap(Int.init(_:)) ?? 5454,  // ?? SQLPostgresConfiguration.ianaPortNumber,
                 username: Environment.get("DATABASE_USERNAME") ?? "luke",
-                password: Environment.get("DATABASE_PASSWORD") ?? "2few3rf3i8!",
+                password: Environment.get("DATABASE_PASSWORD") ?? "",
                 database: Environment.get("DATABASE_NAME") ?? "tickets",
                 tls: .prefer(try .init(configuration: .clientDefault)))
         ), as: .psql)
