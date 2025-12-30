@@ -20,7 +20,7 @@ struct EventController: RouteCollection {
   func getEvent(req: Request) async throws -> EventDTO {
     let id: UUID = try req.requiredId()
 
-    guard let event = try await Event.get(id, on: req.db) else {
+    guard let event = try await Event.find(id, on: req.db) else {
       throw Abort(.notFound)
     }
 

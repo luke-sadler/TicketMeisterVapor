@@ -6,7 +6,6 @@ struct CreateSeating: AsyncMigration {
       .id()
       .field("section", .uuid, .required, .references("seat_section", "id", onDelete: .cascade))
       .field("number", .uint32, .required)
-      .field("status", .string, .required)
       .create()
   }
 

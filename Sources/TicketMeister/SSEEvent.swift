@@ -7,7 +7,7 @@ struct SSEEvent {
   func encode() -> String {
     """
     event: \(event)
-    data: \(data.dump())
+    data: 
 
     """
   }

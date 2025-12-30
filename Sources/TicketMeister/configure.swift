@@ -25,6 +25,7 @@ public func configure(_ app: Application) async throws {
     app.migrations.add(CreateSeating())
     app.migrations.add(CreateEvents())
     app.migrations.add(CreateTickets())
+    app.migrations.add(CreateSeatReservations())
 
     try await app.autoMigrate()
 

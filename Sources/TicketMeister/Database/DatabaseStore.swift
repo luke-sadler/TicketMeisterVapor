@@ -2,11 +2,6 @@ import Fluent
 import Foundation
 
 struct DatabaseStore {
-  @discardableResult
-  static func create<T: Model>(_ m: T, _ db: any Database) async throws -> T {
-    try await m.save(on: db)
-    return m
-  }
 
   @discardableResult
   static func update<T: Model>(
