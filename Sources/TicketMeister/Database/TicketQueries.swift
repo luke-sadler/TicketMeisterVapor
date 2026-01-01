@@ -26,4 +26,11 @@ extension TicketQueries {
       .unwrap(or: Abort(.internalServerError))
   }
 
+  /// Gets [UUID] for all seats associated with all tickets for a given event.
+  static func getTicketSeatsForEvent(_ eventId: UUID, on db: any Database) async throws -> [UUID] {
+    try await T.query(on: db)
+      .filter(\.$event.$id == eventId)
+      .all(\.$seat.$id)
+  }
+
 }

@@ -103,39 +103,44 @@ struct BookingController: RouteCollection {
       try thrower()
     }
 
+    // Retrieve the reservation
     guard
-      let reservation = try? await SeatingReservationsQueries.fullGet(
+      let reservation: SeatingReservation = try? await SeatingReservationsQueries.fullGet(
         id: purchase.reservation,
         on: req.db)
     else {
       try thrower(.reservationNotFound)
     }
 
-    guard let expires = reservation.expires, expires > Date() else {
+    // Check the reservation is valid
+    guard let expires: Date = reservation.expires, expires > Date() else {
       try thrower(.reservationExpired)
     }
 
+    // Check the reservation is for the given user
     guard reservation.user.id == purchase.user else {
       try thrower(.reservationForAnotherUser)
     }
 
     let ticket = Ticket(reservation: reservation)
 
-    if try await TicketQueries.ticketAlreadySold(
-      reservation.seat.requireID(),
-      reservation.event.requireID(),
-      on: req.db)
-    {
+    do {
+      // try to write to the db
+      try await ticket.save(on: req.db)
+    } catch let error as any DatabaseError where error.isConstraintFailure {
+      // There is a failure on the UNIQUE (seatId, eventId) contraint
       try thrower(.seatAlreadySold)
+    } catch let error {
+      throw error
     }
 
-    try await ticket.save(on: req.db)
+    // fetch the ticket back
     let newTicket = try await TicketQueries.getFull(ticket.requireID(), on: req.db)
 
+    // remove the old reservation
     try await reservation.delete(on: req.db)
 
     return newTicket.toDto()
-
   }
 
   @Sendable

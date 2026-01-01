@@ -25,7 +25,7 @@ extension SeatingReservationsQueries {
       .filter(\.$id == id)
       .with(\.$seat) { $0.with(\.$section) { $0.with(\.$priceGroup) } }
       .with(\.$user)
-      .with(\.$event)
+      .with(\.$event) { $0.with(\.$venue) }
       .first()
       .unwrap(or: Abort(.internalServerError))
   }
@@ -38,5 +38,15 @@ extension SeatingReservationsQueries {
 
     try await expired.delete(on: db)
     return expired.count
+  }
+
+  /// Gets [UUID] for all seats associated with all reservations for a given event.
+  static func getReservationSeatsForEvent(_ eventId: UUID, on db: any Database) async throws
+    -> [UUID]
+  {
+    try await T.query(on: db)
+      .filter(\.$event.$id == eventId)
+      .filter(\.$expires > Date())
+      .all(\.$seat.$id)
   }
 }

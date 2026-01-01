@@ -5,5 +5,4 @@ struct SeatGroupDTO: Codable, Content {
   let name: String
   let position: Int
   let priceGroup: PriceGroup
-
 }
