@@ -1,7 +1,12 @@
 import Fluent
 import Vapor
 
-final class Event: Model, Authenticatable, Content, @unchecked Sendable {
+final class Event: Model,
+  Authenticatable,
+  Content,
+  @unchecked Sendable,
+  DTORepresentable
+{
   static let schema = "events"
 
   @ID(key: .id)
@@ -33,10 +38,19 @@ final class Event: Model, Authenticatable, Content, @unchecked Sendable {
     self.start = start
   }
 
-  func toDto() -> EventDTO {
+  func toLiteDto() -> EventLiteDTO {
     .init(
       id: id,
       name: name,
       start: start)
   }
+
+  func toDto() -> EventDTO {
+    .init(
+      id: id,
+      name: name,
+      start: start,
+      venue: venue.toLiteDto())
+  }
+
 }

@@ -14,7 +14,8 @@ protocol DatabaseQuery {
 
 extension DatabaseQuery {
   static func getAll(_ db: any Database) async throws -> [T] {
-    try await T.query(on: db).all()
+    try await T.query(on: db)
+      .all()
   }
 
 }

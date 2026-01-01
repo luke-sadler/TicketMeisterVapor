@@ -16,6 +16,7 @@ extension SeatingReservationsQueries {
     try await SeatingReservation.query(on: db)
       .filter(\.$seat.$id == seat)
       .filter(\.$event.$id == event)
+      .filter(\.$expires > Date())
       .count() > 0
   }
 
@@ -23,8 +24,19 @@ extension SeatingReservationsQueries {
     try await SeatingReservation.query(on: db)
       .filter(\.$id == id)
       .with(\.$seat) { $0.with(\.$section) { $0.with(\.$priceGroup) } }
+      .with(\.$user)
       .with(\.$event)
       .first()
       .unwrap(or: Abort(.internalServerError))
+  }
+
+  @discardableResult
+  static func removeExpiredReservations(on db: any Database) async throws -> Int {
+    let expired = try await SeatingReservation.query(on: db)
+      .filter(\.$expires < Date())
+      .all()
+
+    try await expired.delete(on: db)
+    return expired.count
   }
 }

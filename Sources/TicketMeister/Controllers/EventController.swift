@@ -7,8 +7,9 @@ struct EventController: RouteCollection {
 
     routes.get("events", use: allEvents)
 
-    let event = routes.grouped("event")
-    event.get(":id", use: getEvent)
+    routes.group("event") { route in
+      route.get(":id", use: getEvent)
+    }
   }
 
   @Sendable
@@ -20,7 +21,7 @@ struct EventController: RouteCollection {
   func getEvent(req: Request) async throws -> EventDTO {
     let id: UUID = try req.requiredId()
 
-    guard let event = try await Event.find(id, on: req.db) else {
+    guard let event = try await EventQueries.getEvent(id, on: req.db) else {
       throw Abort(.notFound)
     }
 

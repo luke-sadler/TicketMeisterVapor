@@ -12,10 +12,11 @@ public func configure(_ app: Application) async throws {
         DatabaseConfigurationFactory.postgres(
             configuration: .init(
                 hostname: Environment.get("DATABASE_HOST") ?? "localhost",
-                port: Environment.get("DATABASE_PORT").flatMap(Int.init(_:)) ?? 5454,  // ?? SQLPostgresConfiguration.ianaPortNumber,
-                username: Environment.get("DATABASE_USERNAME") ?? "luke",
+                port: Environment.get("DATABASE_PORT").flatMap(Int.init(_:))
+                    ?? SQLPostgresConfiguration.ianaPortNumber,
+                username: Environment.get("DATABASE_USERNAME") ?? "",
                 password: Environment.get("DATABASE_PASSWORD") ?? "",
-                database: Environment.get("DATABASE_NAME") ?? "tickets",
+                database: Environment.get("DATABASE_NAME") ?? "",
                 tls: .prefer(try .init(configuration: .clientDefault)))
         ), as: .psql)
 
@@ -24,8 +25,11 @@ public func configure(_ app: Application) async throws {
     app.migrations.add(CreateSeatSections())
     app.migrations.add(CreateSeating())
     app.migrations.add(CreateEvents())
+    app.migrations.add(CreateUsers())
     app.migrations.add(CreateTickets())
     app.migrations.add(CreateSeatReservations())
+
+    setupReservationsClearJob(app)
 
     try await app.autoMigrate()
 

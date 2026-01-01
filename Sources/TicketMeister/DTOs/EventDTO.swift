@@ -1,8 +1,15 @@
 import Vapor
 
-struct EventDTO: Codable, Content {
+struct EventLiteDTO: Codable, Content {
   let id: UUID?
   let name: String
-  // let venue: VenueDTO?
   let start: Date?
+}
+
+struct EventDTO: Codable, Content {
+
+  let id: UUID?
+  let name: String
+  let start: Date?
+  let venue: VenueDTO
 }

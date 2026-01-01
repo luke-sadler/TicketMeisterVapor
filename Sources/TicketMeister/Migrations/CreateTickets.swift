@@ -6,6 +6,7 @@ struct CreateTickets: AsyncMigration {
       .id()
       .field("seat", .uuid, .required, .references("seating", "id", onDelete: .cascade))
       .field("event", .uuid, .required, .references("events", "id", onDelete: .cascade))
+      .field("user", .uuid, .required, .references("users", "id", onDelete: .cascade))
       .create()
   }
 

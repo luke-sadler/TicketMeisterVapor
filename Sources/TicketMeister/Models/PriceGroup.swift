@@ -1,7 +1,12 @@
 import Fluent
 import Vapor
 
-final class PriceGroup: Model, Authenticatable, Content, @unchecked Sendable {
+final class PriceGroup: Model,
+  Authenticatable,
+  Content,
+  @unchecked Sendable,
+  DTORepresentable
+{
   static let schema = "price_group"
 
   @ID(key: .id)

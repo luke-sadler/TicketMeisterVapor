@@ -1,7 +1,12 @@
 import Fluent
 import Vapor
 
-final class SeatGroup: Model, Authenticatable, Content, @unchecked Sendable {
+final class SeatGroup: Model,
+  Authenticatable,
+  Content,
+  @unchecked Sendable,
+  DTORepresentable
+{
   static let schema = "seat_section"
 
   @ID(key: .id)

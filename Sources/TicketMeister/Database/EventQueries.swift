@@ -16,6 +16,7 @@ extension EventQueries {
   static func getEvent(_ id: UUID, on db: any Database) async throws -> Event? {
     try await T.query(on: db)
       .filter(\.$id == id)
+      .with(\.$venue)
       .first()
   }
 

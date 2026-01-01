@@ -7,7 +7,9 @@ struct CreateSeatReservations: AsyncMigration {
       .id()
       .field("event", .uuid, .references("events", "id", onDelete: .cascade), .required)
       .field("seat", .uuid, .references("seating", "id", onDelete: .cascade), .required)
+      .field("user", .uuid, .references("users", "id", onDelete: .cascade), .required)
       .field("created", .datetime, .required)
+      .field("expires", .datetime, .required)
       .create()
   }
 
