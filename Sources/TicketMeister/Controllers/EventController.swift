@@ -10,12 +10,13 @@ struct EventController: RouteCollection {
     routes.group("event") { route in
       route.get(":id", use: getEvent)
       route.get([":id", "seating"], use: getEventSeating)
+      route.get([":id", "stream"], use: addSeatStream)
     }
   }
 
   @Sendable
   func allEvents(req: Request) async throws -> [EventDTO] {
-    try await EventQueries.getAll(req.db).map { $0.toDto() }
+    try await EventQueries.getEvents(on: req.db).map { $0.toDto() }
   }
 
   @Sendable
@@ -80,9 +81,59 @@ struct EventController: RouteCollection {
     }
 
     return EventSeatingMapDTO(
-      eventID: eventId,
-      venueID: venueId,
+      eventId: eventId,
+      venueId: venueId,
       sections: sectionDTOs.sorted { $0.position < $1.position }
+    )
+  }
+
+  @Sendable
+  func addSeatStream(_ req: Request) async throws -> Response {
+
+    let eventId = try req.requiredId()
+
+    let id = UUID()
+    print("adding \(id.uuidString) to clients")
+    let stream = AsyncStream<String> { continuation in
+      Task {
+        // Actor method is async, so we must await
+        await broadcaster.addClient(id: id, event: eventId, continuation: continuation)
+
+        continuation.onTermination = { _ in
+          Task {
+            print("removing \(id.uuidString) from clients")
+            await broadcaster.removeClient(id: id)
+          }
+        }
+      }
+    }
+
+    var headers = HTTPHeaders()
+    headers.add(name: .contentType, value: "text/event-stream")
+    headers.add(name: .cacheControl, value: "no-cache")
+    headers.add(name: .connection, value: "keep-alive")
+
+    return Response(
+      status: .ok,
+      headers: headers,
+      body: .init(stream: { writer in
+        Task(priority: .background) {
+          do {
+            for await message in stream {
+              var buffer = ByteBufferAllocator().buffer(capacity: message.utf8.count)
+              buffer.writeString(message)
+              try await writer.write(.buffer(buffer)).get()
+            }
+
+            // Stream ended normally
+            try await writer.write(.end).get()
+
+          } catch {
+            // Client disconnected or write failed
+            try await writer.write(.error(error)).get()
+          }
+        }
+      })
     )
   }
 }

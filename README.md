@@ -24,6 +24,7 @@ Seat
 Seat Group (row, VIP box, whatever..)
  price group
  venue
+ name
 
 Price Group
  name
@@ -50,6 +51,9 @@ List all events
 
 Get event info  
 `GET /event/:id`  
+
+Start streaming seat updates. SSE updates for reservation and tickets for seat changes.  
+`GET /event/:id/stream`
 
 --- 
 ### Venues
@@ -79,9 +83,9 @@ Use `MakeReservationDTO` in body.
 ---
 ### Tickets
 
-Book a ticket, passing in `PurchaseTicketDTO` in body.  
+Book a ticket, passing in `PurchaseTicketDTO` in body  
 `POST /ticket`  
 
-Cancels ticket.  
+Cancels ticket  
 `POST /ticket/:id/cancel`
 

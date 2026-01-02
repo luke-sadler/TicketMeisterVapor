@@ -1,7 +1,7 @@
 import Vapor
 
 struct EventSeatingMapDTO: Content {
-  let eventID: UUID
-  let venueID: UUID
+  let eventId: UUID
+  let venueId: UUID
   let sections: [EventSeatSectionDTO]
 }

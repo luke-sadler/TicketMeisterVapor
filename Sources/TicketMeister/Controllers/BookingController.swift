@@ -94,6 +94,17 @@ struct BookingController: RouteCollection {
       id: reservation.requireID(),
       on: req.db)
 
+    Task {
+      await broadcaster.broadcast(
+        event: .init(
+          data:
+            .init(
+              seatId: reservationReq.seat,
+              eventId: reservationReq.event,
+              newStatus: .reserved))
+      )
+    }
+
     return refreshed.toDto()
   }
 
@@ -140,14 +151,40 @@ struct BookingController: RouteCollection {
     // remove the old reservation
     try await reservation.delete(on: req.db)
 
+    Task {
+      try await broadcaster.broadcast(
+        event:
+          .init(
+            data: .init(
+              seatId: reservation.seat.requireID(),
+              eventId: reservation.event.requireID(),
+              newStatus: .sold))
+      )
+    }
+
     return newTicket.toDto()
   }
 
   @Sendable
   func cancelTicket(_ req: Request) async throws -> Response {
     let ticketId = try req.requiredId()
+    guard let ticket = try await Ticket.find(ticketId, on: req.db) else {
+      return Response(status: .notFound)
+    }
 
-    try await Ticket.find(ticketId, on: req.db)?.delete(on: req.db)
+    try await ticket.delete(on: req.db)
+
+    Task {
+      try await broadcaster.broadcast(
+        event:
+          .init(
+            data: .init(
+              seatId: ticket.seat.requireID(),
+              eventId: ticket.event.requireID(),
+              newStatus: .sold))
+      )
+    }
+
     return Response(status: .accepted)
   }
 

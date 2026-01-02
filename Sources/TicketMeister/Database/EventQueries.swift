@@ -20,4 +20,10 @@ extension EventQueries {
       .first()
   }
 
+  static func getEvents(on db: any Database) async throws -> [Event] {
+    try await T.query(on: db)
+      .with(\.$venue)
+      .all()
+  }
+
 }
